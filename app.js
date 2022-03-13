@@ -10,7 +10,7 @@ const io = require("socket.io")(server);
 app.use(express.static("public"));
 
 app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/public/index.html");
+	res.sendFile(__dirname + "/public/index.html");
 });
 
 let connectedPeers = [];
@@ -36,10 +36,10 @@ io.on("connection", (socket) => {
         callType,
       };
       io.to(calleePersonalCode).emit("pre-offer", data);
-    } else {
+    }else {
       const data = {
         preOfferAnswer: "CALLEE_NOT_FOUND",
-      };
+      }
       io.to(socket.id).emit("pre-offer-answer", data);
     }
   });
@@ -82,57 +82,56 @@ io.on("connection", (socket) => {
 
   socket.on("stranger-connection-status", (data) => {
     const { status } = data;
-    if (status) {
+
+    if(status){
       connectedPeersStrangers.push(socket.id);
-    } else {
+    }else{
       const newConnectedPeersStrangers = connectedPeersStrangers.filter(
         (peerSocketId) => peerSocketId !== socket.id
       );
       connectedPeersStrangers = newConnectedPeersStrangers;
     }
 
-    console.log(connectedPeersStrangers)
+    console.log(connectedPeersStrangers);
+
   });
 
   socket.on("get-stranger-socket-id", () => {
     let randomStrangerSocketId;
-    const filterConnectedPeersStrangers = connectedPeersStrangers.filter(
+    const filteredConnectedPeersStrangers = connectedPeersStrangers.filter(
       (peerSocketId) => peerSocketId !== socket.id
     );
-
-    if (filterConnectedPeersStrangers.length > 0) {
-      randomStrangerSocketId = 
-        filterConnectedPeersStrangers[
-          Math.floor(Math.random() * filterConnectedPeersStrangers.length)
+    
+    if(filteredConnectedPeersStrangers.length > 0){
+      randomStrangerSocketId = filteredConnectedPeersStrangers[Math.floor(Math.random() * filteredConnectedPeersStrangers.length)
       ];
-    } else {
+    }else{
       randomStrangerSocketId = null;
     }
-    
+
     const data = {
-      randomStrangerSocketId
-    };
+      randomStrangerSocketId,
+    }
 
     io.to(socket.id).emit("stranger-socket-id", data);
   });
 
-  socket.on("disconnect", () => {
-    console.log("user disconnected");
+	socket.on("disconnect", () => {
+		console.log('user disconnected');
+		const newConnectedPeers = connectedPeers.filter(
+      (peerSocketId) => peerSocketId !== socket.io
+		);
 
-    const newConnectedPeers = connectedPeers.filter(
-      (peerSocketId) => peerSocketId !== socket.id
-    );
-
-    connectedPeers = newConnectedPeers;
-    //console.log(connectedPeers);
+		connectedPeers = newConnectedPeers;
+		console.log(connectedPeers);
 
     const newConnectedPeersStrangers = connectedPeersStrangers.filter(
       (peerSocketId) => peerSocketId !== socket.id
     );
     connectedPeersStrangers = newConnectedPeersStrangers;
-  });
+	});
 });
 
 server.listen(PORT, () => {
-  console.log(`listening on ${PORT}`);
+	console.log(`listening on ${PORT}`);
 });
